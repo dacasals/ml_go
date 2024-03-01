@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	decision_trees.Trainer()
-	random_forest.Trainer()
+	path := "./data/"
+	decision_trees.Trainer(path)
+	random_forest.Trainer(path)
 
 }

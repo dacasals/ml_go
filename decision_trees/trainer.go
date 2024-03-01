@@ -5,8 +5,8 @@ import (
 	"golang_ml_algorithms/utils"
 )
 
-func Trainer() {
-	path := "/home/yoyi/source/python/ml_from_scratch/"
+func Trainer(path string) {
+
 	XTrainDF := utils.ReadCSV(path + "x_train.csv")
 	yTrainDF := utils.ReadCSV(path + "y_train.csv")
 	XTestDF := utils.ReadCSV(path + "x_test.csv")
