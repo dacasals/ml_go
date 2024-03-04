@@ -25,15 +25,6 @@ type DecisionTree struct {
 	Root            TreeNode
 }
 
-func NewDecisionTree() DecisionTree {
-
-	return DecisionTree{
-		MinSamplesSplit: 2,
-		MaxDepth:        100,
-		NumFeatures:     -1,
-	}
-}
-
 func (model *DecisionTree) Fit(X [][]float64, y []float64) {
 	//TODO implement me
 	numRows := len(X)
@@ -44,7 +35,7 @@ func (model *DecisionTree) Fit(X [][]float64, y []float64) {
 	model.Root = model.expandTree(X, y, 0)
 }
 
-func (model DecisionTree) Predict(X [][]float64) []float64 {
+func (model *DecisionTree) Predict(X [][]float64) []float64 {
 	var yPred []float64
 	for _, x := range X {
 		pred := model.traverseTree(x, &model.Root)
@@ -55,21 +46,21 @@ func (model DecisionTree) Predict(X [][]float64) []float64 {
 
 func (model *DecisionTree) expandTree(X [][]float64, y []float64, depth int) TreeNode {
 
-	n_samples := len(X)
-	n_features := 0
-	if n_samples > 0 {
-		n_features = len(X[0])
+	nSamples := len(X)
+	nFeatures := 0
+	if nSamples > 0 {
+		nFeatures = len(X[0])
 	}
 	labels, _ := Unique(y)
-	n_labels := len(labels)
+	nLabels := len(labels)
 	// If stop conditions reached return most_common_label
-	if depth > model.MaxDepth || n_samples < model.MinSamplesSplit || n_labels == 1 {
+	if depth > model.MaxDepth || nSamples < model.MinSamplesSplit || nLabels == 1 {
 		mcl := model.MostCommonLabel(y)
 		node := TreeNode{Value: mcl}
 		return node
 	}
 
-	seqIndexes := utils.Range(0, n_features, 1)
+	seqIndexes := utils.Range(0, nFeatures, 1)
 	rand.Shuffle(len(seqIndexes), func(i, j int) { seqIndexes[i], seqIndexes[j] = seqIndexes[j], seqIndexes[i] })
 
 	// Find best feature
@@ -95,8 +86,8 @@ func GetRowsByIndexes(X [][]float64, indexRows []int) [][]float64 {
 
 func (model *DecisionTree) MostCommonLabel(y []float64) float64 {
 	counter := make(map[float64]int)
-	max_y := y[0]
-	max_y_count := 1
+	maxY := y[0]
+	maxYCount := 1
 	for i := 1; i < len(y); i++ {
 		value := y[i]
 		if _, ok := counter[value]; !ok {
@@ -104,13 +95,13 @@ func (model *DecisionTree) MostCommonLabel(y []float64) float64 {
 			continue
 		}
 		counter[value] += 1
-		if counter[value] > max_y_count {
-			max_y = value
-			max_y_count = counter[value]
+		if counter[value] > maxYCount {
+			maxY = value
+			maxYCount = counter[value]
 		}
 
 	}
-	return max_y
+	return maxY
 }
 
 func Unique(list []float64) ([]float64, map[float64]int) {
@@ -160,22 +151,22 @@ func (model *DecisionTree) bestFeatureIndex(X [][]float64, y []float64, featureI
 
 func splitChildren(values []float64, threshold float64) ([]int, []float64, []int, []float64) {
 
-	var left_indexes []int
-	var right_indexes []int
-	var left_values []float64
-	var right_values []float64
+	var leftIndexes []int
+	var rightIndexes []int
+	var leftValues []float64
+	var rightValues []float64
 
 	for i := 0; i < len(values); i++ {
 		if values[i] <= threshold {
-			left_indexes = append(left_indexes, i)
-			left_values = append(left_values, values[i])
+			leftIndexes = append(leftIndexes, i)
+			leftValues = append(leftValues, values[i])
 			continue
 		}
-		right_indexes = append(right_indexes, i)
-		right_values = append(right_values, values[i])
+		rightIndexes = append(rightIndexes, i)
+		rightValues = append(rightValues, values[i])
 
 	}
-	return left_indexes, left_values, right_indexes, right_values
+	return leftIndexes, leftValues, rightIndexes, rightValues
 }
 
 func getItemsByIndex(list []float64, indexes []int) []float64 {
@@ -208,15 +199,15 @@ func (model *DecisionTree) informationGain(y []float64, colValues []float64, thr
 func (model *DecisionTree) entropy(y []float64) float64 {
 	//E[x] = - np.sum(p(X_i) * np.log_2(P(x_i))) given that P(X) = #x/n
 	n := float64(len(y))
-	E_x := 0.0
+	EX := 0.0
 	unique, counterFreq := Unique(y)
 	for i := 0; i < len(unique); i++ {
 		freq := counterFreq[unique[i]]
-		p_x := float64(freq) / n
-		log_p_x := math.Log2(p_x)
-		E_x += p_x * log_p_x
+		pX := float64(freq) / n
+		logPX := math.Log2(pX)
+		EX += pX * logPX
 	}
-	return -E_x
+	return -EX
 }
 
 func (model *DecisionTree) traverseTree(x []float64, node *TreeNode) float64 {
