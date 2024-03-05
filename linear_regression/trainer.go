@@ -3,8 +3,6 @@ package linear_regression
 import (
 	"fmt"
 	"golang_ml_algorithms/utils"
-	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/mat"
 )
 
 func Trainer(path string) {
@@ -24,16 +22,6 @@ func Trainer(path string) {
 	}
 	model.Fit(XTrain, yTrain)
 	predictions := model.Predict(XTest)
-	mse := MSE(yTest, predictions)
+	mse := utils.MSE(yTest, predictions)
 	fmt.Printf("LinearRegression MSE = %g \n", mse)
-
-}
-
-func MSE(yTest, yPred []float64) float64 {
-	var diff mat.Dense
-	lenY := float64(len(yPred))
-	diff.Sub(FromArrayToVec(yTest), FromArrayToVec(yPred))
-	diff.MulElem(&diff, &diff)
-	f := floats.Sum(diff.RawMatrix().Data) / lenY
-	return f
 }

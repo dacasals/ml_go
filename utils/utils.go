@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/go-gota/gota/dataframe"
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 	"log"
 	"os"
@@ -76,4 +77,50 @@ func MostCommonLabel(list []float64) float64 {
 
 	}
 	return max_y
+}
+
+func FromArrayToVec(array []float64) *mat.VecDense {
+	arrayLen := len(array)
+	return mat.NewVecDense(arrayLen, array)
+
+}
+
+func ConvertToMat(X [][]float64) *mat.Dense {
+	XSq := make([]float64, 0)
+	for i := 0; i < len(X); i++ {
+		XSq = append(XSq, X[i]...)
+	}
+	XDense := mat.NewDense(len(X), len(X[0]), XSq)
+	return XDense
+}
+
+func AddConstToMat(a mat.Dense, scalar float64) *mat.Dense {
+
+	aRaw := a.RawMatrix()
+	floats.AddConst(scalar, aRaw.Data)
+
+	result := mat.NewDense(aRaw.Rows, aRaw.Cols, aRaw.Data)
+	return result
+}
+func DivConst(alpha float64, x []float64) {
+	for i := range x {
+		x[i] *= alpha
+	}
+}
+func MulMatWithConst(a mat.Dense, scalar float64) *mat.Dense {
+
+	aRaw := a.RawMatrix()
+	DivConst(scalar, aRaw.Data)
+
+	result := mat.NewDense(aRaw.Rows, aRaw.Cols, aRaw.Data)
+	return result
+}
+
+func MSE(yTest, yPred []float64) float64 {
+	var diff mat.Dense
+	lenY := float64(len(yPred))
+	diff.Sub(FromArrayToVec(yTest), FromArrayToVec(yPred))
+	diff.MulElem(&diff, &diff)
+	f := floats.Sum(diff.RawMatrix().Data) / lenY
+	return f
 }
